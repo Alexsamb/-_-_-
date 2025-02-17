@@ -18,7 +18,7 @@ SIGNS = {
     'free': ' ', 'dynamic_stone': 'b', 'static_stone': 'B',
     'fire': 'F', 'water': 'W', 'water_door': '$',
     'fire_door': '#', 'wall': '-', 'fire_lake': 'f',
-    'water_lake': 'w', 'kristal': 'k'  # Добавлен кристал
+    'water_lake': 'w', 'kristal': 'k'
 }
 
 COLORS = {
@@ -26,7 +26,7 @@ COLORS = {
     'fire': (225, 225, 210), 'water': (255, 255, 210),
     'water_door': (60, 100, 200), 'fire_door': (255, 50, 100),
     'wall': (101, 66, 33), 'fire_lake': (0, 0, 0),
-    'water_lake': (255, 255, 210), 'kristal': (255, 215, 0)  # Золотой цвет
+    'water_lake': (255, 255, 210), 'kristal': (255, 215, 0)  
 }
 
 SIZES = {
@@ -34,7 +34,7 @@ SIZES = {
     'fire': None, 'water': None, 'water_door': None,
     'fire_door': None, 'g_wall': None, 'v_wall': None,
     'fire_lake': None, 'water_lake': None,
-    'kristal': None  # Добавлен размер
+    'kristal': None 
 }
 
 kristals = pygame.sprite.Group()
@@ -56,7 +56,7 @@ platforms = pygame.sprite.Group()
 fire_lakes = pygame.sprite.Group()
 water_lakes = pygame.sprite.Group()
 
-# Глобальные ссылки на игроков
+# Cсылки на игроков
 fire = None
 water = None
 fire_kartinka = "image/dark/sprite.png"
@@ -117,7 +117,6 @@ class Kristal(pygame.sprite.Sprite):
         self.image = pygame.Surface(size, pygame.SRCALPHA, 32)
         self.level = level  # Добавляем уровень, на котором находится кристалл
 
-        # Рисуем ромб (кристалл)
         pygame.draw.polygon(self.image, COLORS['kristal'], [
             (size[0]/2, 0),
             (size[0], size[1]/2),
@@ -137,13 +136,11 @@ class Kristal(pygame.sprite.Sprite):
 
 # Инициализация базы данных
 def init_db():
-    # Проверяем, существует ли файл базы данных
     if not os.path.exists('game.db'):
-        # Создаем базу данных и таблицы
         conn = sqlite3.connect('game.db')
         cursor = conn.cursor()
 
-        # Создаем таблицу для хранения собранных кристаллов
+        # Для кристалов
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS collected_kristals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -153,7 +150,7 @@ def init_db():
             )
         ''')
 
-        # Создаем таблицу для хранения прогресса игроков
+        # Для прогресса на уровнях
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS player_progress (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,38 +168,13 @@ def save_kristal_collection(level, player):
     conn = sqlite3.connect('game.db')
     cursor = conn.cursor()
 
-    # Добавляем запись о собранном кристалле
+    # Добавляем сведения о кристалле
     cursor.execute('''
         INSERT INTO collected_kristals (level, player)
         VALUES (?, ?)
     ''', (level, player))
 
-    # Обновляем прогресс игрока
-    cursor.execute('''
-        INSERT OR IGNORE INTO player_progress (player, level, kristals_collected)
-        VALUES (?, ?, 0)
-    ''', (player, level))
-
-    cursor.execute('''
-        UPDATE player_progress
-        SET kristals_collected = kristals_collected + 1
-        WHERE player = ? AND level = ?
-    ''', (player, level))
-
-    conn.commit()
-    conn.close()
-
-def save_kristal_collection(level, player):
-    conn = sqlite3.connect('game.db')
-    cursor = conn.cursor()
-
-    # Добавляем запись о собранном кристалле
-    cursor.execute('''
-        INSERT INTO collected_kristals (level, player)
-        VALUES (?, ?)
-    ''', (level, player))
-
-    # Обновляем прогресс игрока
+    # Обновляем
     cursor.execute('''
         INSERT OR IGNORE INTO player_progress (player, level, kristals_collected)
         VALUES (?, ?, 0)
@@ -302,7 +274,7 @@ class Fire(pygame.sprite.Sprite):
         self.image_pravo = pygame.image.load(fire_kartinka_pravo).convert_alpha()
 
         self.size = size  # Размеры спрайта (ширина, высота)
-        self.image, self.inner_image_size = self.create_sprite(self.original_image) # Изменено
+        self.image, self.inner_image_size = self.create_sprite(self.original_image)
         self.rect = self.image.get_rect(topleft=pos)
 
         self.speed = TILE_SIZE // 25
@@ -321,11 +293,9 @@ class Fire(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def create_sprite(self, source_image):
-        """Создает спрайт с персонажем внутри, уменьшенным по x на 5% с каждой стороны."""
         sprite_width, sprite_height = self.size
         image_width, image_height = source_image.get_size()
 
-        # Уменьшаем ширину на 5% с каждой стороны
         padding_x = sprite_width * 0.05
         inner_width = sprite_width - 2 * padding_x
 
@@ -415,7 +385,6 @@ class Fire(pygame.sprite.Sprite):
             self.rect.y = self.rect.bottom - self.max_jump_height - self.rect.height
 
     def draw(self, surface):
-        """Рисует спрайт на поверхности."""
         surface.blit(self.image, self.rect)
         if DEBUG_DRAW_RECTS:
             pygame.draw.rect(surface, (0, 0, 0), self.rect, 2)
@@ -451,11 +420,9 @@ class Water(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def create_sprite(self, source_image):
-        """Создает спрайт с персонажем внутри, уменьшенным по x на 5% с каждой стороны."""
         sprite_width, sprite_height = self.size
         image_width, image_height = source_image.get_size()
 
-        # Уменьшаем ширину на 5% с каждой стороны
         padding_x = sprite_width * 0.05
         inner_width = sprite_width - 2 * padding_x
 
@@ -545,7 +512,6 @@ class Water(pygame.sprite.Sprite):
             self.rect.y = self.rect.bottom - self.max_jump_height - self.rect.height
 
     def draw(self, surface):
-        """Рисует спрайт на поверхности."""
         surface.blit(self.image, self.rect)
         if DEBUG_DRAW_RECTS:
             pygame.draw.rect(surface, (0, 0, 0), self.rect, 2)
@@ -596,7 +562,6 @@ class WaterLake(pygame.sprite.Sprite):
         pass
 
     def draw(self, surface):
-        """Отрисовывает озеро."""
         surface.blit(self.image, self.rect)
         if DEBUG_DRAW_RECTS:
             pygame.draw.rect(surface, (0, 0, 0), self.rect, 2)
@@ -685,7 +650,6 @@ def load_level(filename):
                 )
 
 def draw_menu(screen, font, play_button_rect, levels_button_rect):
-    """Рисует экран меню."""
     screen.fill((0, 0, 0))  # Черный фон
     text = font.render("Свет и Тьма", True, (255, 255, 255))
     text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
@@ -704,7 +668,6 @@ def draw_menu(screen, font, play_button_rect, levels_button_rect):
     screen.blit(levels_text, levels_text_rect)
 
 def draw_end_screen(screen, font, win):
-    """Рисует экран завершения игры."""
     screen.fill((50, 50, 50))  # Серый фон
     if win:
         text = font.render("Победа!", True, (0, 255, 0))
@@ -758,8 +721,6 @@ def draw_levels_screen(screen, font, level_buttons, back_button_rect):
     back_text_rect = back_text.get_rect(center=back_button_rect.center)
     screen.blit(back_text, back_text_rect)
 
-# ... (предыдущий код без изменений)
-
 pygame.init()
 init_db()
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT + BUTTON_PLACE))
@@ -768,7 +729,7 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 74)
 small_font = pygame.font.Font(None, 36)
 
-# Определяем прямоугольники для кнопок "Играть" и "Уровни"
+# Прямоугольники "Играть" и "Уровни"
 button_width = 200
 button_height = 50
 button_x = WINDOW_WIDTH // 2 - button_width - 10  # Смещаем кнопку "Играть" влево
@@ -802,10 +763,9 @@ level_buttons = {
 # Кнопка "Назад"
 back_button_rect = pygame.Rect(WINDOW_WIDTH // 2 - 100, WINDOW_HEIGHT - 100, 200, 50)
 
-# Основной цикл
+# Основной цикл игры
 while running:
     current_time = pygame.time.get_ticks()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -843,7 +803,7 @@ while running:
                 for level, button_rect in level_buttons.items():
                     if button_rect.collidepoint(event.pos):
                         game_state = GAME
-                        load_level(f'{level}.txt')  # Загружаем выбранный уровень
+                        load_level(f'{level}.txt')  # Загрузка выбранного уровеня
                         game_over = False
                         level_complete = False
                         if fire:
@@ -854,7 +814,6 @@ while running:
                     game_state = MENU  # Возврат в главное меню
 
     screen.fill((0, 0, 0))  # Очистка экрана
-
     if game_state == MENU:
         draw_menu(screen, font, play_button_rect, levels_button_rect)
     elif game_state == GAME:
